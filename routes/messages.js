@@ -49,10 +49,15 @@ router.get('/:id', ensureLoggedIn, async function (req, res, next) {
  **/
 
 router.post('/', ensureLoggedIn, async function (req, res, next) {
+    console.log(req.user);
     try {
-        const { to_username, body } = req.params;
+        const { to_username, body } = req.body;
         const from_username = req.user.username;
-        const message = await Message.create(from_username, to_username, body);
+        const message = await Message.create({
+            from_username,
+            to_username,
+            body,
+        });
         return res.json({ message });
     } catch (err) {
         next(err);

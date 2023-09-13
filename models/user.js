@@ -103,7 +103,10 @@ class User {
      *   {username, first_name, last_name, phone}
      */
 
-    static async messagesFrom(username) {}
+    static async messagesFrom(username) {
+        const result = await db.query(``);
+        // we need to create some sample messages first!
+    }
 
     /** Return messages to this user.
      *
@@ -113,7 +116,9 @@ class User {
      *   {username, first_name, last_name, phone}
      */
 
-    static async messagesTo(username) {}
+    static async messagesTo(username) {
+        const result = await db.query(``);
+    }
 }
 
 module.exports = User;
