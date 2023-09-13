@@ -34,3 +34,5 @@ router.get('/', (req, res, next) => {
  * Make sure that the only the intended recipient can mark as read.
  *
  **/
+
+module.exports = router;

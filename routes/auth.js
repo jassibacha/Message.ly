@@ -1,21 +1,34 @@
 const express = require('express');
 const router = new express.Router();
 const ExpressError = require('../expressError');
-const db = require('../db');
-const bcrypt = require('bcrypt');
+//const db = require('../db');
+//const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { BCRYPT_WORK_FACTOR, SECRET_KEY } = require('../config');
-const { ensureLoggedIn, ensureAdmin } = require('../middleware/auth');
-
-router.get('/', (req, res, next) => {
-    res.send('APP IS WORKING!!!');
-});
+//const { ensureLoggedIn, ensureAdmin } = require('../middleware/auth');
+const User = require('../models/user');
 
 /** POST /login - login: {username, password} => {token}
  *
  * Make sure to update their last-login!
  *
  **/
+router.post('/login', async function (req, res, next) {
+    try {
+        let { username, password } = req.body;
+        // Run authentication and wait for true
+        if (await User.authenticate(username, password)) {
+            // Get the token
+            let token = jwt.sign({ username }, SECRET_KEY);
+            // Update the login timestamp
+            User.updateLoginTimestamp(username);
+            // Return the token
+            return res.json({ token });
+        }
+    } catch (err) {
+        throw new ExpressError('Invalid username / password.', 400);
+    }
+});
 
 /** POST /register - register user: registers, logs in, and returns token.
  *
@@ -25,13 +38,18 @@ router.get('/', (req, res, next) => {
  */
 router.post('/register', async function (req, res, next) {
     try {
-        const { username, password } = req.body;
-        if (!username || !password) {
-            throw new ExpressError('Username and password required', 400);
-        }
-        // hash password
-        const hashedPassword = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
+        // Register user
+        let newUser = await User.register(req.body);
+        let username = newUser.username;
+        // Get the token
+        let token = jwt.sign({ username: newUser.username }, SECRET_KEY);
+        // Update the login timestamp
+        User.updateLoginTimestamp(username);
+        // Return the token
+        return res.json({ token });
     } catch (err) {
         return next(err);
     }
 });
+
+module.exports = router;

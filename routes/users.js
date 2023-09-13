@@ -2,10 +2,7 @@ const express = require('express');
 const router = new express.Router();
 const ExpressError = require('../expressError');
 const db = require('../db');
-
-router.get('/', (req, res, next) => {
-    res.send('TEMP APP IS WORKING!!!');
-});
+const User = require('../models/user');
 
 /** GET / - get list of users.
  *
@@ -13,11 +10,21 @@ router.get('/', (req, res, next) => {
  *
  **/
 
+router.get('/', async function (req, res, next) {
+    const users = await User.all();
+    return res.json({ users });
+});
+
 /** GET /:username - get detail of users.
  *
  * => {user: {username, first_name, last_name, phone, join_at, last_login_at}}
  *
  **/
+router.get('/:username', async function (req, res, next) {
+    const { username } = req.params;
+    const user = await User.get(username);
+    return res.json({ user });
+});
 
 /** GET /:username/to - get messages to user
  *
@@ -38,3 +45,5 @@ router.get('/', (req, res, next) => {
  *                 to_user: {username, first_name, last_name, phone}}, ...]}
  *
  **/
+
+module.exports = router;
